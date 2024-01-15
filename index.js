@@ -4,249 +4,27 @@ const _req_node_child_process = require('node:child_process'),
 
 // install
 if (!_req_node_fs.existsSync('package-lock.json')) {
-    console.log('install npm packages...');
-    console.log(_req_node_child_process.execSync('npm install express ejs yaml crypto-js uuid cookie-session body-parser page-hopper markdown-it markdown-it-katex markdown-it-toc').toString());
-    console.log('mkdir /posts...');
-    _req_node_fs.mkdirSync(_req_node_path.join(__dirname, 'posts'), { mode: 0o777 });
-    console.log('generate template files...');
-    _req_node_fs.mkdirSync(_req_node_path.join(__dirname, 'template/default'), { recursive: true, mode: 0o777 });
-    _req_node_fs.writeFileSync(_req_node_path.join(__dirname, 'template/default/_footer.ejs'),
-`<footer>
-    <small>
-        &copy; ChaosCodex, All Rights Reserved.
-        <% if (session.username !== undefined) { %>
-            <a href="/admin/configs"><%= session.username %></a> / <a href="/admin/post">publish</a> (<a href="/auth/logout">logout</a>)
-        <% } else { %>
-            <a href="/auth/login">Log in</a>
-        <% } %>
-    </small>
-</footer>`);
-    _req_node_fs.writeFileSync(_req_node_path.join(__dirname, 'template/default/_head.ejs'),
-`<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<style type="text/css">:root{color-scheme:light dark;--light:#fff;--light-less:#efefef;--dark:#303030;--dark-less:#808080;--focus:red;}*{box-sizing:border-box;margin:0;padding:0;}html{border-top:5px solid var(--dark);background-color:var(--light);line-height:1.5rem;font-family:sans-serif;font-size:14px;color:var(--dark);}body{margin:0 auto;padding:0 20px;max-width:800px;}a{color:var(--dark);text-decoration:underline;}a:hover{color:var(--focus);}a mark{color:var(--focus);background:none;}header,nav,main,footer,h1,h2,h3,h4,h5,h6,p,img,blockquote,img,pre,input,select,textarea,ul,ol{display:block;margin-bottom:18px;}h1{font-size:1.8rem;}h2{font-size:1.6rem;}h3{font-size:1.4rem;}h4{font-size:1.2rem;}h5{font-size:1rem;}h6{font-size:1rem;}ul ul,ol ol{margin-bottom:0;}ul,ol{padding-left:30px;}section h3{margin-bottom:10px;}input,textarea,table{width:100%;}th,td{padding:3px 0;}th{text-align:left;}tr:nth-child(odd) td{background-color:var(--light-less);}form section{display:flex;flex-direction:row;}form section p:not(:last-child){margin-right:10px;}form section p{flex:1 1 auto;margin-bottom:0;}input[type=text],input[type=email],input[type=password],select,textarea{border:1px solid var(--dark);background-color:var(--light-less);border-radius:3px;padding:8px;}button,input[type=submit]{display:inline-block;background-color:var(--dark);color:var(--light);padding:8px;border-radius:3px;border:none;cursor:pointer;}button:hover,input[type=submit]:hover{background-color:var(--focus);}pre,code,blockquote{background-color:var(--light-less);overflow:auto;}pre{font-size:12px;line-height:1.3rem;}blockquote{border-left:solid 3px var(--dark-less);padding:10px;}blockquote p{margin-bottom:0;}small{color:var(--dark-less);}header h1 a{display:inline-block;background-color:var(--dark);color:var(--light);margin-top:20px;padding:5px 10px 5px 10px;text-decoration:none;font-weight:bold;font-size:1.2rem;}header h1 a:hover{color:var(--light);background-color:var(--focus);}nav a,div a{margin-right:5px;}footer{padding:20px 0;}.katex-html{display:none;}@media (prefers-color-scheme:dark){:root{--light:#222;--light-less:#333;--dark:#eee;--dark-less:#fefefe;--focus:red;}}</style>`);
-    _req_node_fs.writeFileSync(_req_node_path.join(__dirname, 'template/default/_header.ejs'),
-`<header>
-    <h1>
-        <a href="/"><%= configs.blog.title %></a>
-    </h1>
-    <nav>
-        <% categories.forEach((c) => { %>
-            <a href="/category/<%= c %>"><%= c %></a>
-        <% }) %>
-        <% if (session.username !== undefined) { %>
-            <a href="/admin/configs">configs</a>
-            <a href="/admin/security">security</a>
-        <% } %>
-    </nav>
-</header>`);
-    _req_node_fs.writeFileSync(_req_node_path.join(__dirname, 'template/default/_posts.ejs'),
-`<% paginate.data.forEach((post) => { %>
-    <section>
-        <h3>
-            <a href="/post/<%= post.file.replace('.md', '') %>"><%= post.title %></a>
-        </h3>
-        <p><%= post.markdown.substring(0, configs.intro.length) %>...</p>
-    </section>
-<% }); %>
-<nav>
-    <% for (let p = 1; p <= paginate.totalPages; p++) { %>
-        <a href="?p=<%= p %>"><%= p %></a>
-    <% } %>
-<nav>`);
-    _req_node_fs.writeFileSync(_req_node_path.join(__dirname, 'template/default/admin_configs.ejs'),
-`<html>
-    <head>
-        <%- include('_head.ejs'); -%>
-    </head>
-    <body>
-        <%- include('_header.ejs'); -%>
-        <main>
-            <h1>configs</h1>
-            <form method="post" action="/admin/configs">
-                <section>
-                    <p>
-                        <label>blog.title</label>
-                        <input name="blog.title" type="text" value="<%= configs.blog.title %>" required>
-                    </p>
-                    <p>
-                        <label>blog.slogan</label>
-                        <input name="blog.slogan" type="text" value="<%= configs.blog.slogan %>" required>
-                    </p>
-                </section>
-                <p>
-                    <label>template</label>
-                    <input name="template" type="text" value="<%= configs.template %>" required>
-                </p>
-                <section>
-                    <p>
-                        <label>pagesize.index</label>
-                        <input name="pagesize.index" type="text" value="<%= configs.pagesize.index %>" required>
-                    </p>
-                    <p>
-                        <label>pagesize.category</label>
-                        <input name="pagesize.category" type="text" value="<%= configs.pagesize.category %>" required>
-                    </p>
-                </section>
-                <section>
-                    <p>
-                        <label>cookie.name</label>
-                        <input name="cookie.name" type="text" value="<%= configs.cookie.name %>" required>
-                    </p>
-                    <p>
-                        <label>cookie.secret</label>
-                        <input name="cookie.secret" type="text" value="<%= configs.cookie.secret %>" required>
-                    </p>
-                </section>
-                <p>
-                    <label>intro.length (if template support)</label>
-                    <input name="intro.length" type="text" value="<%= configs.intro.length %>" required>
-                </p>
-                <p>
-                    <label>highlightjs.style (if template support)</label>
-                    <input name="highlightjs.style" type="text" value="<%= configs.highlightjs.style %>" required>
-                </p>
-                <button type="submit">save configs</button>
-            </form>
-        </main>
-        <%- include('_footer.ejs'); -%>
-    </body>
-</html>`);
-    _req_node_fs.writeFileSync(_req_node_path.join(__dirname, 'template/default/admin_post.ejs'),
-`<html>
-    <head>
-        <%- include('_head.ejs'); -%>
-    </head>
-    <body>
-        <%- include('_header.ejs'); -%>
-        <main>
-            <h1><%= post ? 'edit' : 'publish' %> post</h1>
-            <form method="post" action="/admin/post/<%= post ? post.file.replace('.md', '') : '' %>">
-                <p>
-                    <label>content</label>
-                    <textarea name="content" rows="55" required><%= post ? post.markdown : '[category]:# ()\\n[title]:# ()\\n\\n' %></textarea>
-                </p>
-                <button type="submit"><%= post ? 'edit' : 'publish' %> now</button>
-            </form>
-        </main>
-        <%- include('_footer.ejs'); -%>
-    </body>
-</html>`);
-    _req_node_fs.writeFileSync(_req_node_path.join(__dirname, 'template/default/admin_security.ejs'),
-`<html>
-    <head>
-        <%- include('_head.ejs'); -%>
-    </head>
-    <body>
-        <%- include('_header.ejs'); -%>
-        <main>
-            <h1>security</h1>
-            <form method="post" action="/admin/security" onsubmit="if (document.getElementById('password.new').value !== document.getElementById('password.new.confirm').value) { alert('The passwords entered twice are inconsistent'); return false; }">
-                <p>
-                    <label>old password</label>
-                    <input name="password.old" type="password" required>
-                </p>
-                <p>
-                    <label>new password</label>
-                    <input id="password.new" name="password.new" type="password" required>
-                </p>
-                <p>
-                    <label>new password confirm</label>
-                    <input id="password.new.confirm" type="password" required>
-                </p>
-                <button type="submit">change password</button>
-            </form>
-        </main>
-        <%- include('_footer.ejs'); -%>
-    </body>
-</html>`);
-    _req_node_fs.writeFileSync(_req_node_path.join(__dirname, 'template/default/auth_login.ejs'),
-`<html>
-    <head>
-        <%- include('_head.ejs'); -%>
-    </head>
-    <body>
-        <%- include('_header.ejs'); -%>
-        <main>
-            <form method="post" action="/auth/login">
-                <p>
-                    <label>Username</label>
-                    <input name="username" type="text" required>
-                </p>
-                <p>
-                    <label>Password</label>
-                    <input name="password" type="password" required>
-                </p>
-                </div>
-                <button type="submit">Sign in</button>
-            </form>
-        </main>
-        <%- include('_footer.ejs'); -%>
-    </body>
-</html>`);
-    _req_node_fs.writeFileSync(_req_node_path.join(__dirname, 'template/default/category.ejs'),
-`<html>
-    <head>
-        <%- include('_head.ejs'); -%>
-    </head>
-    <body>
-        <%- include('_header.ejs'); -%>
-        <main>
-            <%- include('_posts.ejs'); -%>
-        </main>
-        <%- include('_footer.ejs'); -%>
-    </body>
-</html>`);
-    _req_node_fs.writeFileSync(_req_node_path.join(__dirname, 'template/default/index.ejs'),
-`<html>
-    <head>
-        <%- include('_head.ejs'); -%>
-    </head>
-    <body>
-        <%- include('_header.ejs'); -%>
-        <main>
-            <%- include('_posts.ejs'); -%>
-        </main>
-        <%- include('_footer.ejs'); -%>
-    </body>
-</html>`);
-    _req_node_fs.writeFileSync(_req_node_path.join(__dirname, 'template/default/post.ejs'),
-`<html>
-    <head>
-        <%- include('_head.ejs'); -%>
-        <link rel="stylesheet" type="text/css" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.8.0/styles/<%= configs.highlightjs.style %>.min.css">
-    </head>
-    <body>
-        <%- include('_header.ejs'); -%>
-        <main>
-            <h1><%= post.title %></h1>
-            <p>
-                <small>
-                    <%= post.birthtime %>
-                    <% if (session.username !== undefined) { %>
-                        <small>/</small>
-                        <a href="/admin/post/<%= post.file.replace('.md', '') %>">edit</a>
-                        <small>/</small>
-                        <a href="/admin/post/<%= post.file.replace('.md', '') %>/delete" onclick="return confirm('It cannot be recovered after deletion. Do you want to confirm the deletion?')">delete</a>
-                    <% } %>
-                </small>
-            </p>
-            <%- post.html %>
-        </main>
-        <%- include('_footer.ejs'); -%>
-        <script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-        <script>hljs.highlightAll();</script>
-    </body>
-</html>`);
-    console.log('generate config file...');
-    _req_node_fs.writeFileSync(_req_node_path.join(__dirname, 'config.yml'), require('yaml').stringify({
-        blog: { title: 'ChaosCodex', slogan: 'Hello World!' },
-        pagesize: { index: 10, category: 10 },
-        cookie: { name: 'sess', secret: require('uuid').v4() },
-        auth: { username: 'admin', password: '4a9b3ca6-6bc3-40d4-be85-c9fa9085d40e#df1c0d2200cb2b1fafb4fa8092927f85' },
-        template: 'default',
-        intro: { length: 180 },
-        highlightjs: { style: 'stackoverflow-dark' }
-    }));
+    (() => {
+        _req_node_child_process.execSync('npm install express ejs yaml crypto-js uuid cookie-session body-parser markdown-it markdown-it-toc markdown-it-mathjax3').toString();
+        _req_node_fs.writeFileSync('config.yml', require('yaml').stringify({
+            blog: { title: 'ChaosCodex', template: 'default' },
+            cookie: { name: 'sess', secret: require('uuid').v4() },
+            auth: { username: 'admin', password: '4a9b3ca6-6bc3-40d4-be85-c9fa9085d40e#df1c0d2200cb2b1fafb4fa8092927f85' }
+        }));
+        if (!_req_node_fs.existsSync('posts')) {
+            _req_node_fs.mkdirSync('posts', { mode: 0o777 });
+        }
+        _req_node_fs.mkdirSync('template/default', { recursive: true, mode: 0o777 });
+        const includeHead = `<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><link rel="stylesheet" type="text/css" href="https://cdn.bootcdn.net/ajax/libs/modern-normalize/2.0.0/modern-normalize.min.css"><style type="text/css">html{font-size:14px;}body{max-width:738px;margin:30px auto 60px;padding:0 15px;}a:hover{color:red;}pre{font-size:12px;}img{max-width:100%;}input,textarea{display:block;}textarea{width:100%;}button{cursor:pointer;}</style>`,
+            includeHeader = `<header><nav><a href="/">home</a>&nbsp;&nbsp;<% categories.forEach((c) => { %><a href="/category/<%= c %>"><%= c %></a>&nbsp;<% }) %></nav></header>`,
+            includeFooter = `<footer><small>powered by <a href="https://github.com/1022011c125f5d64/node-single-file-blog">node-single-file-blog</a>.&nbsp;<% if (session.username !== undefined) { %><a href="/admin/password">password</a> / <a href="/admin/post">publish</a> / <a href="/auth/logout">logout</a><% } else { %><a href="/auth/login">Log in</a><% } %></small></footer>`;
+        _req_node_fs.writeFileSync('template/default/index.ejs', `<html><head>${includeHead}</head><body>${includeHeader}<main><ul><% posts.forEach((p) => { %><li><a href="/post/<%= p.file.replace('.md', '') %>"><%= p.title %></a></li><% }); %></ul></main>${includeFooter}</body></html>`);
+        _req_node_fs.writeFileSync('template/default/category.ejs', `<html><head>${includeHead}</head><body>${includeHeader}<main><ul><% posts.forEach((p) => { %><li><a href="/post/<%= p.file.replace('.md', '') %>"><%= p.title %></a></li><% }); %></ul></main>${includeFooter}</body></html>`);
+        _req_node_fs.writeFileSync('template/default/post.ejs', `<html><head>${includeHead}<link rel="stylesheet" type="text/css" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.8.0/styles/stackoverflow-dark.min.css"></head><body>${includeHeader}<main><h1><%= post.title %></h1><p><small><%= post.birthtime %><% if (session.username !== undefined) { %>&nbsp;/&nbsp;<a href="/admin/post/<%= post.file.replace('.md', '') %>">edit</a>&nbsp;/&nbsp;<a href="/admin/post/<%= post.file.replace('.md', '') %>/delete" onclick="return confirm('It cannot be recovered after deletion. Do you want to confirm the deletion?')">delete</a><% } %></small></p><%- post.html %></main>${includeFooter}<script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script><script>hljs.highlightAll();</script></body></html>`);
+        _req_node_fs.writeFileSync('template/default/auth_login.ejs', `<html><head>${includeHead}</head><body>${includeHeader}<main><form method="post" action="/auth/login"><p><label>Username</label><input name="username" type="text" required></p><p><label>Password</label><input name="password" type="password" required></p></div><button type="submit">Sign in</button></form></main>${includeFooter}</body></html>`);
+        _req_node_fs.writeFileSync('template/default/admin_post.ejs', `<html><head>${includeHead}</head><body>${includeHeader}<main><h1><%= post ? 'edit' : 'publish' %> post</h1><form method="post" action="/admin/post/<%= post ? post.file.replace('.md', '') : '' %>"><p><textarea name="content" rows="55" required><%= post ? post.markdown : '[category]:# ()\\n[title]:# ()\\n\\n' %></textarea></p><button type="submit"><%= post ? 'edit' : 'publish' %> now</button></form></main>${includeFooter}</body></html>`);
+        _req_node_fs.writeFileSync('template/default/admin_password.ejs', `<html><head>${includeHead}</head><body>${includeHeader}<main><h1>security</h1><form method="post" action="/admin/security" onsubmit="if (document.getElementById('password.new').value !== document.getElementById('password.new.confirm').value) { alert('The passwords entered twice are inconsistent'); return false; }"><p><label>old password</label><input name="password.old" type="password" required></p><p><label>new password</label><input id="password.new" name="password.new" type="password" required></p><p><label>new password confirm</label><input id="password.new.confirm" type="password" required></p><button type="submit">change password</button></form></main>${includeFooter}</body></html>`);
+    })();
 }
 
 // requires
@@ -256,10 +34,7 @@ const _req_express = require('express'),
     _req_uuid = require('uuid'),
     _req_cookie_session = require('cookie-session'),
     _req_body_parser = require('body-parser'),
-    _req_page_hopper = require('page-hopper'),
-    _req_markdown_it = require('markdown-it')()
-        .use(require('markdown-it-toc'))
-        .use(require('markdown-it-katex'));
+    _req_markdown_it = require('markdown-it')().use(require('markdown-it-toc')).use(require('markdown-it-mathjax3'));
 
 // configs
 let _configs = _req_yaml.parse(_req_node_fs.readFileSync(_req_node_path.join(__dirname, 'config.yml')).toString());
@@ -349,25 +124,21 @@ _req_express()
 
 // site routes
 .get('/', (req, res) => {
-    const paginate = _req_page_hopper(_tools.posts, req.query.p ? parseInt(req.query.p) : 1, _configs.pagesize.index);
-    res.render(`${_configs.template}/index`, {
+    res.render(`${_configs.blog.template}/index`, {
         session: req.session,
-        configs: _configs,
         categories: Object.keys(_tools.categoryPostsMap),
-        paginate: paginate
+        posts: _tools.posts
     });
 })
-.get('/category/:id', (req, res) => {
-    const categoryPosts = _tools.categoryPostsMap[req.params.id];
+.get('/category/:name', (req, res) => {
+    const categoryPosts = _tools.categoryPostsMap[req.params.name];
     if (!categoryPosts) {
         throw new Error('category not found');
     }
-    const paginate = _req_page_hopper(categoryPosts, req.query.p ? parseInt(req.query.p) : 1, _configs.pagesize.category);
-    res.render(`${_configs.template}/category`, {
+    res.render(`${_configs.blog.template}/category`, {
         session: req.session,
-        configs: _configs,
         categories: Object.keys(_tools.categoryPostsMap),
-        paginate: paginate
+        posts: categoryPosts
     });
 })
 .get('/post/:id([a-z0-9\-]{36})', (req, res) => {
@@ -375,9 +146,8 @@ _req_express()
     if (!post) {
         throw new Error('post not found');
     }
-    res.render(`${_configs.template}/post`, {
+    res.render(`${_configs.blog.template}/post`, {
         session: req.session,
-        configs: _configs,
         categories: Object.keys(_tools.categoryPostsMap),
         post: post
     });
@@ -385,7 +155,7 @@ _req_express()
 
 // auth routes
 .get('/auth/login', (req, res) => {
-    res.render(`${_configs.template}/auth_login`, {
+    res.render(`${_configs.blog.template}/auth_login`, {
         session: req.session,
         configs: _configs,
         categories: Object.keys(_tools.categoryPostsMap)
@@ -410,7 +180,7 @@ _req_express()
 
 // admin routes（without validate）
 .get('/admin/post/:id([a-z0-9\-]{36})?', (req, res) => {
-    res.render(`${_configs.template}/admin_post`, {
+    res.render(`${_configs.blog.template}/admin_post`, {
         session: req.session,
         configs: _configs,
         categories: Object.keys(_tools.categoryPostsMap),
@@ -428,34 +198,14 @@ _req_express()
     _tools.reloadPosts();
     res.redirect('/');
 })
-.get('/admin/configs', (req, res) => {
-    res.render(`${_configs.template}/admin_configs`, {
+.get('/admin/password', (req, res) => {
+    res.render(`${_configs.blog.template}/admin_password`, {
         session: req.session,
         configs: _configs,
         categories: Object.keys(_tools.categoryPostsMap)
     });
 })
-.post('/admin/configs', (req, res) => {
-    _configs.blog.title = req.body['blog.title'];
-    _configs.blog.slogan = req.body['blog.slogan'];
-    _configs.template = req.body['template'];
-    _configs.pagesize.index = parseInt(req.body['pagesize.index']);
-    _configs.pagesize.category = parseInt(req.body['pagesize.category']);
-    _configs.cookie.name = req.body['cookie.name'];
-    _configs.cookie.secret = req.body['cookie.secret'];
-    _configs.intro.length = parseInt(req.body['intro.length']);
-    _configs.highlightjs.style = req.body['highlightjs.style'];
-    _req_node_fs.writeFileSync(_req_node_path.join(__dirname, 'config.yml'), _req_yaml.stringify(_configs));
-    res.redirect('/admin/configs');
-})
-.get('/admin/security', (req, res) => {
-    res.render(`${_configs.template}/admin_security`, {
-        session: req.session,
-        configs: _configs,
-        categories: Object.keys(_tools.categoryPostsMap)
-    });
-})
-.post('/admin/security', (req, res) => {
+.post('/admin/password', (req, res) => {
     const passwordOld = req.body['password.old'],
         passwordNew = req.body['password.new'],
         passwordSplit = _configs.auth.password.split('#');
