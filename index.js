@@ -5,7 +5,7 @@ const _req_node_child_process = require('node:child_process'),
 // install
 if (!_req_node_fs.existsSync('package-lock.json')) {
     (() => {
-        _req_node_child_process.execSync('npm install express ejs yaml crypto-js uuid cookie-session body-parser markdown-it markdown-it-toc markdown-it-mathjax3').toString();
+        _req_node_child_process.execSync('npm install express ejs yaml crypto-js uuid cookie-session body-parser markdown-it markdown-it-toc markdown-it-mathjax3 markdown-it-mark').toString();
         _req_node_fs.writeFileSync('config.yml', require('yaml').stringify({
             blog: { title: 'ChaosCodex', template: 'default' },
             cookie: { name: 'sess', secret: require('uuid').v4() },
@@ -34,7 +34,7 @@ const _req_express = require('express'),
     _req_uuid = require('uuid'),
     _req_cookie_session = require('cookie-session'),
     _req_body_parser = require('body-parser'),
-    _req_markdown_it = require('markdown-it')().use(require('markdown-it-toc')).use(require('markdown-it-mathjax3'));
+    _req_markdown_it = require('markdown-it')().use(require('markdown-it-toc')).use(require('markdown-it-mathjax3')).use(require('markdown-it-mark'));
 
 // configs
 let _configs = _req_yaml.parse(_req_node_fs.readFileSync(_req_node_path.join(__dirname, 'config.yml')).toString());
