@@ -101,6 +101,9 @@ _tools.loadPosts();
 // express
 _req_express()
 
+// https://expressjs.com/en/starter/static-files.html
+.use(_req_express.static('public'))
+
 // http://www.npmjs.com/package/body-parser
 .use(_req_body_parser.urlencoded({ extended: false }))
 
