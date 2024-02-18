@@ -15,7 +15,7 @@ if (!_req_node_fs.existsSync('package-lock.json')) {
             _req_node_fs.mkdirSync('posts', { mode: 0o777 });
         }
         _req_node_fs.mkdirSync('template/default', { recursive: true, mode: 0o777 });
-        const includeHead = `<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><link rel="stylesheet" type="text/css" href="https://cdn.bootcdn.net/ajax/libs/modern-normalize/2.0.0/modern-normalize.min.css"><style type="text/css">html{font-size:14px;}body{max-width:738px;margin:30px auto 60px;padding:0 15px;}a:hover{color:red;}pre{font-size:12px;}img{max-width:100%;}input,textarea{display:block;}textarea{width:100%;}button{cursor:pointer;}</style>`,
+        const includeHead = `<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><link rel="stylesheet" type="text/css" href="https://cdn.bootcdn.net/ajax/libs/modern-normalize/2.0.0/modern-normalize.min.css"><style type="text/css">*{margin:0;padding:0;border:none;}html{font-family:sans-serif;}body{max-width:830px;margin:0 auto;padding:0 15px;color:#333;font-size:14px;line-height:1.4;font-family:"PingFang SC","Helvetica Neue","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Helvetica,Arial,Verdana,sans-serif;}a{color:#42b983;}a:hover{color:red;}h1,h2,h3,h4,h5,h6,img,pre,p,ul,ol,input[type='text'],input[type='password'],textarea{display:block;margin-bottom:15px;}h1{font-size:24px;}h2{font-size:22px;}h3{font-size:20px;}h4{font-size:18px;}h5{font-size:16px;}h6{font-size:14px;}ul ul,ol ol{margin-bottom:0;}img{max-width:100%;}ul,ol{padding-left:40px;}input[type='text'],input[type='password'],textarea{width:100%;padding:8px;border:1px solid #aaa;border-radius:5px;}button{display:inline-block;padding:4px 20px;border-radius:10px;border-bottom:4px solid #3aa373;color:#fff;background-color:#4fc08d;}button:hover{background-color:#22bd77;}pre,code{font-size:12px;font-family:'Fira Code','Source Code Pro','Consolas',courier,monospace;background-color:#f8f8f8;}code{margin:0 2px;padding:3px 5px;color:#e96900;border-radius:2px;}small{color:#888;}header{padding:35px 0;}header nav a{color:#222;font-size:16px;margin-right:5px;}footer{padding:50px 0;}</style>`,
             includeHeader = `<header><nav><a href="/">home</a>&nbsp;&nbsp;<% categories.forEach((c) => { %><a href="/category/<%= c %>"><%= c %></a>&nbsp;<% }) %></nav></header>`,
             includeFooter = `<footer><small>powered by <a href="https://github.com/1022011c125f5d64/node-single-file-blog">node-single-file-blog</a>.&nbsp;<% if (session.username !== undefined) { %><a href="/admin/password">password</a> / <a href="/admin/post">publish</a> / <a href="/auth/logout">logout</a><% } else { %><a href="/auth/login">Log in</a><% } %></small></footer>`;
         _req_node_fs.writeFileSync('template/default/index.ejs', `<html><head>${includeHead}</head><body>${includeHeader}<main><ul><% posts.forEach((p) => { %><li><a href="/post/<%= p.file.replace('.md', '') %>"><%= p.title %></a></li><% }); %></ul></main>${includeFooter}</body></html>`);
@@ -101,7 +101,7 @@ _tools.loadPosts();
 // express
 _req_express()
 
-// https://www.npmjs.com/package/body-parser
+// http://www.npmjs.com/package/body-parser
 .use(_req_body_parser.urlencoded({ extended: false }))
 
 // https://expressjs.com/en/advanced/best-practice-security.html
